@@ -69,13 +69,21 @@ rest.prototype.make_request = function (sub_path, params, cb) {
     });
 };
 
-rest.prototype.make_public_request = function (path, cb) {
+rest.prototype.make_public_request = function (path, payload, cb) {
     var url;
     url = this.url + '/v1/' + path;
+
+    // If optional payload is not provided, 'payload' contains cb
+    if (typeof(payload) === 'function') {
+        cb = payload;  // The callback function
+        payload = '';  // Empty query string
+    }
+
     return request({
         url: url,
         method: "GET",
-        timeout: 15000
+        timeout: 15000,
+        qs: payload
     }, function (err, response, body) {
         var error, error1, result;
         if (err || (response.statusCode !== 200 && response.statusCode !== 400)) {
@@ -146,8 +154,8 @@ rest.prototype.orderbook = function (symbol, options, cb) {
     }
     return this.make_public_request(uri, cb);
 };
-rest.prototype.trades = function (symbol, cb) {
-    return this.make_public_request('trades/' + symbol, cb);
+rest.prototype.trades = function (symbol, payload, cb) {
+    return this.make_public_request('trades/' + symbol, payload, cb);
 };
 
 rest.prototype.lends = function (currency, cb) {
